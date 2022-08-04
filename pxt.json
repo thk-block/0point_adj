@@ -1,6 +1,6 @@
 {
     "name": "0point_adj",
-    "version": "0.2.4",
+    "version": "0.1.0",
     "description": "",
     "dependencies": {
         "core": "*",
