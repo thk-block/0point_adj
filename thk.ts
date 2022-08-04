@@ -17,19 +17,15 @@ namespace THK {
     //To get the PWM pulses to the correct size and zero offset these are the default numbers. 
     let ServoMultiplier = 226
     let ServoZeroOffset = 0x66
-    let Pulse_bairitu = 80
+    let Pulse_Ratio = 80
     let initalised = false //a flag to allow us to initialise without explicitly calling the secret incantation
     
 
     //nice big list of servos for the block to use. These represent register offsets in the PCA9865
     export enum Servos {
-        //% block="モータ１"
-        Motor1= 0x08,
-        //% block="モータ２"
-        Motor2 = 0x0C,
-        //% block="モータ３"
-        Motor3 = 0x10,
-        /**
+        SV1 = 0x08,
+        SV2 = 0x0C,
+        SV3 = 0x10,
         SV4 = 0x14,
         SV5 = 0x18,
         SV6 = 0x1C,
@@ -43,7 +39,7 @@ namespace THK {
         SV14 = 0x3C,
         SV15 = 0x40,
         SV16 = 0x44,
-        */
+    
     }
 
     export enum BoardAddresses {
@@ -57,13 +53,16 @@ namespace THK {
     // a better trim function that does the maths for the end user could be exposed, the basics are here 
     // for reference
 
-
-        //% blockId=TrimServoMultiplier
+    //% blockId=TrimServoMultiplier
     //% block="TrimServoMultiplierを%Value|に変更"
     //% group="サーボモータ"
     //% weight=100 color=#ff8c00 icon="\uf085"
     //% Value.min=113 Value.max=226
-
+    /**
+ * TrimServoMultiplierの変更
+ * @param Value eg: 226
+ */
+ 
     export function TrimServoMultiplier(Value: number) {
         if (Value < 113) {
             ServoMultiplier = 113
@@ -84,6 +83,10 @@ namespace THK {
     //% group="サーボモータ"
     //% weight=100 color=#ff8c00 icon="\uf085"
     //% Value.min=102 Value.max=204
+    /**
+ * TrimServoZeroOffsetの変更
+ * @param Value eg: 102
+ */
 
     export function TrimServoZeroOffset(Value: number) {
         if (Value < 0x66) {
@@ -104,9 +107,13 @@ namespace THK {
     //% group="サーボモータ"
     //% weight=100 color=#ff8c00 icon="\uf085"
     //% Value.min=0 Value.max=100
+    /**
+  * パルス倍率の変更
+  * @param Value eg: 80
+  */
 
     export function Pulse(Value: number) {
-        Pulse_bairitu = Value
+        Pulse_Ratio = Value
     }
     /*
         This secret incantation sets up the PCA9865 I2C driver chip to be running at 50Hx pulse repetition, and then sets the 16 output registers to 1.5mS - centre travel.
@@ -144,17 +151,24 @@ namespace THK {
     }
 
     /**
- * 全てのスロープ（モータ１～３）を水平（0度）にします。
+ * SV1-9を0度にします。(稼働範囲は-90度～+90度)
  */
     //% blockId=level_all
-    //% block="全てのスロープを水平（0度）にする"
+    //% block="SV1-9を0度にする"
     //% group="サーボモータ"
     //% weight=100 color=#ff8c00 icon="\uf085"
 
     export function LebelTheTable(): void {
-        THK.thk_servo(THK.Servos.Motor1, 0)
-        THK.thk_servo(THK.Servos.Motor2, 0)
-        THK.thk_servo(THK.Servos.Motor3, 0)
+        THK.thk_servo(THK.Servos.SV1, 0)
+        THK.thk_servo(THK.Servos.SV2, 0)
+        THK.thk_servo(THK.Servos.SV3, 0)
+        THK.thk_servo(THK.Servos.SV4, 0)
+        THK.thk_servo(THK.Servos.SV5, 0)
+        THK.thk_servo(THK.Servos.SV6, 0)
+        THK.thk_servo(THK.Servos.SV7, 0)
+        THK.thk_servo(THK.Servos.SV8, 0)
+        THK.thk_servo(THK.Servos.SV9, 0)
+        
     }
 
     //% blockId=Kitronik_servo
@@ -175,13 +189,13 @@ namespace THK {
         degrees = degrees - 90 //-180～0度
         degrees = -degrees //反転（時計周りを＋にするため)
 
-        if (degrees < 1) { //0°でモータが震えるため
+        if (degrees < 1) { //0°指定でモータが振動する対策
             degrees = 1
         }
 
         let buf = pins.createBuffer(2)
         let HighByte = false
-        let deg100 = degrees * Pulse_bairitu //元は100
+        let deg100 = degrees * Pulse_Ratio //変更前は *100
         let PWMVal100 = deg100 * ServoMultiplier
         let PWMVal = PWMVal100 / 10000
 
