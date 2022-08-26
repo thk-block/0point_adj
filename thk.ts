@@ -189,7 +189,10 @@ namespace THK {
         degrees = degrees - 90 //-180～0度
         degrees = -degrees //反転（時計周りを＋にするため)
 
-        if (degrees < 1) { //0°指定でモータが振動する対策
+        if (degrees > 175) { //180度付近で挙動が不安定になる個体の対策
+            degrees = 175
+        }
+        if (degrees < 1) { //0°指定でモータが振動する個体の対策
             degrees = 1
         }
 
